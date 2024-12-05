@@ -2,13 +2,12 @@ package ru.kata.spring.boot_security.demo.dao;
 
 
 import org.springframework.stereotype.Repository;
-import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.entity.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class UserDaoImpl implements UserDao {
@@ -48,16 +47,16 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void delete(User item) {
-        User deletedUser = entityManager.find(User.class, item.getId());
-        entityManager.remove(deletedUser);
+    public void delete(User user) {
+        entityManager.createQuery("DELETE FROM User u WHERE u.id = :userId")
+                .setParameter("userId", user.getId()).executeUpdate();
     }
 
     @Override
-    public void update(User item, long id) {
+    public void update(User user, long id) {
         User updatedUser = findById(id);
-        updatedUser.setName(item.getName());
-        updatedUser.setEmail(item.getEmail());
+        updatedUser.setName(user.getName());
+        updatedUser.setEmail(user.getEmail());
         entityManager.merge(updatedUser);
     }
 }

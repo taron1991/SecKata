@@ -1,10 +1,15 @@
-package ru.kata.spring.boot_security.demo.roles;
+package ru.kata.spring.boot_security.demo.entity;
 
 
 import org.springframework.security.core.GrantedAuthority;
-import ru.kata.spring.boot_security.demo.model.User;
 
-import javax.persistence.*;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
 
 
@@ -13,7 +18,7 @@ import java.util.Objects;
 public class Role implements GrantedAuthority {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column (name = "role")

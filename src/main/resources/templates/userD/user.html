@@ -13,7 +13,7 @@
 </div>
 <br>
 <div sec:authorize="hasRole('ROLE_ADMIN')">
-    <form th:method="GET" th:action="@{/admin/{id}/edit(id=${user.getId()})}">
+    <form th:method="GET" th:action="@{/admin/show/edit(id=${user.getId()})}">
         <input type="submit" value="Отредактировать пользователя">
     </form>
     <br>
