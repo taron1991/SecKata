@@ -10,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.ManyToMany;
+import java.util.Collection;
 import java.util.Objects;
 
 
@@ -21,54 +23,54 @@ public class Role implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column (name = "role")
-    private String role;
+    @Column (name = "name")
+    private String name;
+
+
+    @ManyToMany(mappedBy = "roles")
+    private Collection<User> users;
+
 
     public Role() {
     }
 
-    public Role(String role) {
-        this.role = role;
-    }
 
     @Override
     public String getAuthority() {
-        return role;
+        return name;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getRole() {
-        return role;
+    public String getName() {
+        return name;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return "Role{" +
-                "role='" + role + '\'' +
-                '}';
+        return this.name;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role1 = (Role) o;
-        return id == role1.id && Objects.equals(role, role1.role);
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Role role = (Role) object;
+        return id == role.id && Objects.equals(name, role.name) && Objects.equals(users, role.users);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, role);
+        return Objects.hash(id, name, users);
     }
 }

@@ -2,74 +2,96 @@ package ru.kata.spring.boot_security.demo.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.dao.UserDao;
+import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@Service
+@Service ("userDetailServiceImpl")
 @Transactional(readOnly = true)
-public class UserServiceImpl implements UserService {
-
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private UserDao userDao;
     private PasswordEncoder passwordEncoder;
+    private RoleService roleService;
 
     @Autowired
-    public UserServiceImpl(UserDao userDao, PasswordEncoder passwordEncoder) {
+    public void setUserDaoAndEncoder(UserDao userDao,
+                                     PasswordEncoder passwordEncoder,
+                                     RoleService roleService) {
         this.userDao = userDao;
         this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
     }
 
     @Override
-    public List<User> userList() {
-        return userDao.userList();
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
+
+        User user = userDao.findUserByName(username);
+        if (user == null) {
+            throw new UsernameNotFoundException(
+                    "No user found with username: "+ username);
+        }
+        return User.fromUser(user);
     }
 
+    @Override
     @Transactional
-    public User addUser(User user){
+    public void saveUser(User user) {
         User userToSave = new User();
-        userToSave.setName(user.getName());
-        userToSave.setEmail(user.getEmail());
+        userToSave.setUsername(user.getUsername());
         userToSave.setPassword(passwordEncoder.encode(user.getPassword()));
         userToSave.setRoles(user.getRoles());
-
-        return userDao.addUser(userToSave);
+        userDao.saveUser(userToSave);
     }
 
-    @Transactional
-    public void delById(long userId){
-        userDao.delById(userId);
-    }
-
-    public User findById(long userId){
-        return userDao.findById(userId);
+    public Set<Role> getSetOfRoles(List<String> rolesId){
+        Set<Role> roleSet = new HashSet<>();
+        for (String id: rolesId) {
+            roleSet.add(roleService.getRoleById(Long.parseLong(id)));
+        }
+        return roleSet;
     }
 
     @Override
     @Transactional
-    public User findByEmail(String email) {
-        return userDao.findByEmail(email);
+    public User findUser(Long id) {
+        return userDao.findUser(id);
     }
 
-    @Transactional
     @Override
-    public void update(User user, long id) {
-        userDao.update(user, id);
+    @Transactional
+    public User findUserByName(String name) {
+        return userDao.findUserByName(name);
     }
 
-    @Transactional
     @Override
-    public void delete(User user) {
-        userDao.delete(user);
+    @Transactional
+    public void updateUser(User user) {
+        userDao.updateUser(user);
     }
 
+    @Override
     @Transactional
-    public void deleteItem(User user) {
-        userDao.delete(user);
+    public List<User> listUsers() {
+        return userDao.listUsers();
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long id) {
+        userDao.deleteUser(id);
     }
 }

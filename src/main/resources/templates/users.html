@@ -1,37 +1,33 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Users</title>
 </head>
 <body>
-<h1>Добро пожаловать на страницу наших пользователей!</h1>
-<div>
-    <table border="1" bgcolor="#fffaf0">
-        <tr>
-            <th>Имя</th>
-            <th>Электронная почта</th>
-            <th>Детали пользователя</th>
-        </tr>
+<table>
+    <thead>
+    <tr>
+        <th> id </th>
+        <th> name </th>
+        <th> password </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${users.isEmpty()}">
+        <td colspan="5"> No Users Available </td>
+    </tr>
+    <tr th:each="user : ${users}">
+        <td><span th:text="${user.id}"> model </span></td>
+        <td><span th:text="${user.username}"> series </span></td>
+        <td><a th:href="@{admin/{id}/edit(id=${user.id})}" >edit</a></td>
+        <td><a th:href="@{admin/{id}/delete(id=${user.id})}" >delete</a></td>
+    </tr>
+    </tbody>
 
-        <tr th:each="user : ${users}">
-            <td th:text="${user.name}">name</td>
-            <td th:text="${user.email}">email</td>
-            <td>
-                <a th:href="@{/admin/{id}(id=${user.getId()})}"
-                   th:text="Посмотреть"></a>
-            </td>
-        </tr>
-    </table>
-    <br>
-    <br>
-    <form th:method="GET" th:action="@{/admin/new}">
-        <input type="submit" value="Добавить нового пользователя?">
-    </form>
-</div>
-<br>
-<form th:method="GET" action="/auth/logout">
-    <input type="submit" value="Выйти">
-</form>
+</table>
+<a th:href="@{admin/new}" >add User</a>
+<div th:replace="fragments/logout :: logout"></div>
 </body>
 </html>

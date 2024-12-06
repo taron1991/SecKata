@@ -1,7 +1,6 @@
 package ru.kata.spring.boot_security.demo.configs;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,65 +11,57 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final UserDetailsService userDetailsService;
-    private final SuccessUserHandler successHandler;
+    private UserDetailsService userService;
 
     @Autowired
-    public WebSecurityConfig(@Qualifier("userDetailServiceImpl") UserDetailsService userDetailsService
-            , SuccessUserHandler successHandler) {
-        this.userDetailsService = userDetailsService;
-        this.successHandler = successHandler;
+    public void setUserService(UserDetailsService userService) {
+        this.userService = userService;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/").access("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-                .antMatchers("/auth/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-                .antMatchers("/user/").access("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-                .antMatchers("/admin/**").access("hasRole('ROLE_ADMIN')")
-                .anyRequest()
-                .authenticated()
-                .and()
                 .formLogin()
-                .loginPage("/auth/login")
-                .loginProcessingUrl("/auth/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .successHandler(successHandler)
-                .permitAll()
-                .and()
-                .logout()
-                .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/")
+                .loginPage("/login")
+                .loginProcessingUrl("/perform_login")
+                .successHandler(new SuccessUserHandler())
                 .permitAll();
-    }
 
+        http.logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login?logout")
+                .and().csrf().disable();
+
+        http
+
+                .authorizeRequests()
+                .antMatchers("/login").anonymous()
+                .antMatchers("/user").access("hasAnyRole('ADMIN', 'USER')")
+                .antMatchers("/admin/**").access("hasAnyRole('ADMIN')")
+                .antMatchers("/hello").access("hasAnyRole('ADMIN')").anyRequest().authenticated();
+
+    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(daoAuthenticationProvider());
-    }
-
-
-
-    @Bean
-    protected DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        return daoAuthenticationProvider;
+        auth.authenticationProvider(authenticationProvider());
     }
 
     @Bean
-    public static PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        final DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 }

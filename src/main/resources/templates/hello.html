@@ -7,11 +7,10 @@
 </head>
 <body>
 <div>
-    <form method="post" action="perform_login">
-        <input name="username"/>
-        <input name="password"/>
-        <input type="submit"/>
-    </form>
+    <th:block th:each="msg : ${messages}">
+        <h1 th:text="${msg}"></h1>
+    </th:block>
 </div>
+<div th:replace="fragments/logout :: logout"></div>
 </body>
 </html>
