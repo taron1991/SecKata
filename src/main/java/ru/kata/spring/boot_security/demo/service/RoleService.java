@@ -12,7 +12,7 @@ import java.util.List;
 @Transactional
 public class RoleService {
     @Autowired
-    RoleDao roleDao;
+    private RoleDao roleDao;
 
     public Role getRoleById(Long id) {
         return roleDao.getRoleById(id);
